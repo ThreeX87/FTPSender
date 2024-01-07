@@ -1,0 +1,43 @@
+# Project: FTPSender
+# Makefile created by Embarcadero Dev-C++ 6.3
+
+CPP      = g++.exe
+CC       = gcc.exe
+WINDRES  = windres.exe
+OBJ      = main.o ini.o filelist.o loger.o ftpsender.o archivecleaner.o
+LINKOBJ  = main.o ini.o filelist.o loger.o ftpsender.o archivecleaner.o
+LIBS     = -L"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/lib32" -lcurl -lws2_32  -lwinmm -static-libgcc "../../Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/libcurl.a" -m32
+INCS     = -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include"
+CXXINCS  = -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include" -I"C:/Program Files (x86)/Embarcadero/Dev-Cpp/TDM-GCC-64/lib/gcc/x86_64-w64-mingw32/9.2.0/include/c++"
+BIN      = FTPSender.exe
+CXXFLAGS = $(CXXINCS) -m32 -std=gnu++2a
+CFLAGS   = $(INCS) -m32 -std=gnu++2a
+DEL      = C:\Program Files (x86)\Embarcadero\Dev-Cpp\devcpp.exe INTERNAL_DEL
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before $(BIN) all-after
+
+clean: clean-custom
+	${DEL} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o $(BIN) $(LIBS)
+
+main.o: main.cpp
+	$(CPP) -c main.cpp -o main.o $(CXXFLAGS)
+
+ini.o: ini.cpp
+	$(CPP) -c ini.cpp -o ini.o $(CXXFLAGS)
+
+filelist.o: filelist.cpp
+	$(CPP) -c filelist.cpp -o filelist.o $(CXXFLAGS)
+
+loger.o: loger.cpp
+	$(CPP) -c loger.cpp -o loger.o $(CXXFLAGS)
+
+ftpsender.o: ftpsender.cpp
+	$(CPP) -c ftpsender.cpp -o ftpsender.o $(CXXFLAGS)
+
+archivecleaner.o: archivecleaner.cpp
+	$(CPP) -c archivecleaner.cpp -o archivecleaner.o $(CXXFLAGS)
