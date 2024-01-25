@@ -10,12 +10,12 @@
 
 class FtpSender {
 public:
-	explicit FtpSender(INI& config, Loger& log);
+	explicit FtpSender(Ini::Ini& config, Loger& log);
 	~FtpSender();
 	
-	int SendToFtp(const std::string& task);
+	int SendToFtp(); //const std::string& task);
 private:
-	INI& config_;
+	Ini::Ini& config_;
 	Loger& log_;
 	CURL *curlup = NULL;
 	

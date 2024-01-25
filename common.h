@@ -2,6 +2,7 @@
 
 #include <ctime>
 #include <chrono>
+#include <string>
 
 enum LOG_STATUS {
 	ER,
@@ -15,3 +16,10 @@ std::time_t to_time_t(TP tp) {
               + system_clock::now());
     return system_clock::to_time_t(sctp);
 }
+
+struct ServerSettings {
+	std::string server;
+	std::string user;
+	std::string password;
+	int timeout = 0;
+};

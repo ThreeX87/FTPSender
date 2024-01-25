@@ -10,7 +10,9 @@ using namespace std;
 int main(int argc, char** argv)
 {
 	fs::path setting_file = (fs::path(argv[0])).parent_path() / "settings.ini";
-	INI settings(setting_file.string());
+	ifstream ifs(setting_file);
+	Ini::Ini settings(ifs);
+
 	Loger log;
 	
 	int log_level = settings.GetValueInt("log", "log_level");
@@ -28,16 +30,16 @@ int main(int argc, char** argv)
 		repeat = 5 * 60000;
 	}
 	
-	map<string, string> tasks = settings.GetValueMap("tasks");
+	//map<string, string> tasks = settings.GetValueMap("tasks");
 	
 	bool exit = false;
 	while(!exit) {
 		cout << ">> Start program\n";
 		
 		int sended = 0;
-		for (const auto& task : tasks) {
-			sended += sender.SendToFtp(task.second);
-		}
+		//for (const auto& task : tasks) {
+			sended += sender.SendToFtp();
+		//}
 		
 		cleaner_archive.ClearArchive();
 		

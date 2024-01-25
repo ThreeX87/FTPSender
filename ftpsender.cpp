@@ -46,15 +46,20 @@ std::string FtpSender::InfoProgram() {
 	result += "Archive path:\t\t" + AddEndCharToString(config_.GetValue("local", "archive_path"), '\\') + "\n";
 	if(config_.GetValueBool("local", "check_ext")) {
 		result += "Extensions to send:\n";
-		for (const auto [_, ext] : config_.GetValueMap("extensions")) {
-			result += "\t\t\t*." + ext + "\n";
+		const auto& extensions = config_.GetNode("extensions");
+		if (extensions.IsChapter()) {
+			for (const auto& ext : extensions.AsChapter().second) {
+				if (ext.IsSection()) {
+					result += "\t\t\t*." + ext.AsSection().second + "\n";
+				}
+			}
 		}
 	}
 	result += "------------------------------------------------\n";
 	return result;
 }
 
-FtpSender::FtpSender(INI& config, Loger& log)
+FtpSender::FtpSender(Ini::Ini& config, Loger& log)
 	: config_(config)
 	, log_(log) {
 	std::cout << InfoProgram();
@@ -99,22 +104,25 @@ bool FtpSender::CheckExtension(const fs::path& file) {
 		return true;
 	}
 	std::string file_extension = file.extension().empty() ? file.stem().string() : file.extension().string();
-	for (const auto& [_, ext] : config_.GetValueMap("extensions")) {
-		if (file_extension == ("." + ext)) {
-			return true;
+	const auto& extensions = config_.GetNode("extensions");
+	if (extensions.IsChapter()) {
+		for (const auto& ext : extensions.AsChapter().second) {
+			if (ext.IsSection() && file_extension == ("." + ext.AsSection().second)) {
+				return true;
+			}
 		}
 	}
 	return false;
 }
 
-int FtpSender::SendToFtp(const std::string& task) {
+int FtpSender::SendToFtp() { //const std::string& task) {
 	if(curlup == NULL) {
-		log_.SaveEventToLog("ftp curl_easy_init create curl failed", LOG_STATUS::ER);
 		return -1;
 	}
 	
 	fs::path archive_file = AddEndCharToString(ChangeCharInString(config_.GetValue("local", "archive_path"), '/', '\\'), '\\');
 	std::string ftp_url = AddEndCharToString(ChangeCharInString(config_.GetValue("FTP", "server"), '\\', '/'), '/');
+	std::string dest_path = AddEndCharToString(ChangeCharInString(config_.GetValue("local", "dest_path"), '\\', '/'), '/');
 	fs::path rep_file = ChangeCharInString(config_.GetValue("local", "rep_file"), '/', '\\');
 	std::string spr_file = AddEndCharToString(ChangeCharInString(config_.GetValue("local", "spr_file"), '\\', '/'), '/');
 	std::string file_mask = config_.GetValue("local", "file_mask");
@@ -141,7 +149,6 @@ int FtpSender::SendToFtp(const std::string& task) {
 				continue;
 			}
 			if(stat(localpath_file.string().c_str(), &file_info)) {
-				log_.SaveEventToLog(localpath_file.string() + " - ftp fopen file failed", LOG_STATUS::ER);
 				int i = 1;
 				while(i > 0) {
 					fs::path temp_file = localpath_file.parent_path() / ("temp" + std::to_string(i) + localpath_file.extension().string());
@@ -157,7 +164,6 @@ int FtpSender::SendToFtp(const std::string& task) {
 			
 			fd = fopen(localpath_file.string().c_str(), "rb");
 			if (fd == NULL) {
-				log_.SaveEventToLog(localpath_file.string() + " - ftp fopen file failed", LOG_STATUS::ER);
 				int i = 1;
 				while(i > 0) {
 					fs::path temp_file = localpath_file.parent_path() / ("temp" + std::to_string(i) + localpath_file.extension().string());
@@ -190,7 +196,8 @@ int FtpSender::SendToFtp(const std::string& task) {
 				else {
 					new_location = new_location / (file_mask + std::to_string(i) + localpath_file.extension().string());
 				}
-		    	destin_file = ftp_url + new_location.string();
+		    	destin_file = ftp_url + dest_path + new_location.string();
+		    	std::cout << destin_file;
 				curl_easy_setopt(curlup, CURLOPT_URL, destin_file.c_str());
 				curl_easy_setopt(curlup, CURLOPT_NOBODY, 1L);
 		    	CURLcode r = curl_easy_perform(curlup);
@@ -214,7 +221,6 @@ int FtpSender::SendToFtp(const std::string& task) {
 				continue;
 			}
 		    ++file_count;
-		    log_.SaveEventToLog(localpath_file.string() + " Send", LOG_STATUS::OK);
 			MoveFile(localpath_file, archive_file / new_location);
 		}                         
 	}
