@@ -3,8 +3,9 @@
 #include <filesystem>
 #include <chrono>
 #include <ctime>
+#include <iostream>
 
-#include "loger.h"
+//#include "loger.h"
 #include "filelist.h"
 #include "common.h"
 

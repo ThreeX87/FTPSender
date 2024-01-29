@@ -3,14 +3,14 @@
 #include <filesystem>
 #include <vector>
 
-#include "loger.h"
+//#include "loger.h"
 #include "common.h"
 
 namespace fs = std::filesystem;
 
 class FileListMaker {
 public:
-	explicit FileListMaker(const fs::path& parent_path, Loger& log);
+	explicit FileListMaker(const fs::path& parent_path);
 	
 	//рекурсивный метод для получения списка файлов во всех вложенных папках
 	void MakeFileList(const fs::path& parent_path);
@@ -22,5 +22,4 @@ public:
 	
 private:
 	std::vector<fs::path> filelist_;
-	Loger& log_;
 };

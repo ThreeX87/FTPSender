@@ -1,8 +1,7 @@
 #include "filelist.h"
 
 
-FileListMaker::FileListMaker(const fs::path& parent_path, Loger& log)
-	: log_(log) {
+FileListMaker::FileListMaker(const fs::path& parent_path) {
 	MakeFileList(parent_path);
 }
 
@@ -20,7 +19,7 @@ void FileListMaker::MakeFileList(const fs::path& path) {
 		}
 	}
 	catch(...) {
-		log_.SaveEventToLog(path.string() + " NOT OPENED", LOG_STATUS::ER);
+		return;
 	}
 }
 

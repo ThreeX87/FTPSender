@@ -68,12 +68,14 @@ public:
 	const size_t Size() const;
 	const Node& GetNode(const std::string& key) const;
 	const Node& GetNode(const std::string& chapter, const std::string& key) const;
-	const std::string GetValue(const std::string& chapter, const std::string& key) const;
-	const int GetValueInt(const std::string& chapter, const std::string& key) const;
-	const bool GetValueBool(const std::string& chapter, const std::string& key) const;
-
+	const std::string GetValue(const std::string& chapter, const std::string& key);
+	const int GetValueInt(const std::string& chapter, const std::string& key);
+	const bool GetValueBool(const std::string& chapter, const std::string& key);
+	
+	bool IsEdited() const;
 private:
 	Node root_;
+	bool is_edited_ = false;
 };
 
 bool operator==(const Node& lhs, const Node& rhs);

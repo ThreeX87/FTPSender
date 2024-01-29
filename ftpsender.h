@@ -2,7 +2,7 @@
 
 #include "ini.h"
 #include "filelist.h"
-#include "loger.h"
+//#include "loger.h"
 #include "common.h"
 
 #include <iostream>
@@ -10,13 +10,12 @@
 
 class FtpSender {
 public:
-	explicit FtpSender(Ini::Ini& config, Loger& log);
+	explicit FtpSender(Ini::Ini& config);
 	~FtpSender();
 	
 	int SendToFtp(); //const std::string& task);
 private:
 	Ini::Ini& config_;
-	Loger& log_;
 	CURL *curlup = NULL;
 	
 	bool CheckExtension(const fs::path& file);

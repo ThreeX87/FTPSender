@@ -262,19 +262,25 @@ const Node& Ini::GetNode(const string& chapter, const string& key) const {
 	return root_.GetNode(chapter, key);
 }
 
-const string Ini::GetValue(const string& chapter, const string& key) const {
-	return root_.GetValue(chapter, key);
+const string Ini::GetValue(const string& chapter, const string& key) {
+	auto result = root_.GetValue(chapter, key);
+	if (result == "") {
+		SetValue(chapter, key, "");
+	}
+	return result;
 }
 
 bool Ini::SetValue(const string& key, const string& value) {
+	is_edited_ = true;
 	return root_.AddSection(key, value);
 }
 
 bool Ini::SetValue(const string& chapter, const string& key, const string& value) {
+	is_edited_ = true;
 	return root_.AddSection(chapter, key, value);
 }
 
-const int Ini::GetValueInt(const std::string& chapter, const std::string& key) const {
+const int Ini::GetValueInt(const std::string& chapter, const std::string& key) {
 	int result = 0;
 	try {
 		result = stoi(GetValue(chapter, key));
@@ -285,9 +291,13 @@ const int Ini::GetValueInt(const std::string& chapter, const std::string& key) c
 	return result;
 }
 
-const bool Ini::GetValueBool(const std::string& chapter, const std::string& key) const {
+const bool Ini::GetValueBool(const std::string& chapter, const std::string& key) {
 	string result = GetValue(chapter, key);
 	return result == "true";
+}
+
+bool Ini::IsEdited() const {
+	return is_edited_;
 }
 
 }
@@ -328,7 +338,7 @@ Array LoadArray(istream& input, bool root) {
 
 		if (c == ';' || c == '#') {
 			ss.putback(c);
-			result.push_back(LoadString(ss));
+			result.push_back(ss.str());
 		} else if (c == '[') {
 			Chapter chapter;
 			chapter.first = LoadString(ss);

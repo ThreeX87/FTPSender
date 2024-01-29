@@ -4,9 +4,11 @@
 #include <sstream>
 #include <iostream>
 
-std::string FtpSender::ChangeCharInString(const std::string& text, char original, char changed) {
-	if (text.find(original) != std::string::npos) {
-		std::string result;
+using namespace std;
+
+string FtpSender::ChangeCharInString(const string& text, char original, char changed) {
+	if (text.find(original) != string::npos) {
+		string result;
 		for (const auto& c : text) {
 			result.push_back(c == original? changed : c);
 		}
@@ -15,20 +17,20 @@ std::string FtpSender::ChangeCharInString(const std::string& text, char original
 	return text;
 }
 
-std::string AddEndCharToString(const std::string& text, char c) {
+string AddEndCharToString(const string& text, char c) {
 	if (text.back() == c) {
 		return text;
 	}
-	std::string temp(text);
+	string temp(text);
 	temp.push_back(c);
 	return temp;
 }
 
-std::string DelEndCharOnString(const std::string& text, char c) {
+string DelEndCharOnString(const string& text, char c) {
 	if (text.back() != c) {
 		return text;
 	}
-	std::string temp(text);
+	string temp(text);
 	temp.pop_back();
 	return temp;
 }
@@ -39,8 +41,8 @@ void MoveFile(const fs::path& from, const fs::path& to) {
 	fs::remove(from);
 }
 
-std::string FtpSender::InfoProgram() {
-	std::string result = "--------------------Settings--------------------\n";
+string FtpSender::InfoProgram() {
+	string result = "--------------------Settings--------------------\n";
 	result += "Server:\t\t\t" + AddEndCharToString(config_.GetValue("FTP", "server"), '\\') + "\n";
 	result += "Path to sync:\t\t" + AddEndCharToString(config_.GetValue("local", "sync_path"), '\\') + "\n";
 	result += "Archive path:\t\t" + AddEndCharToString(config_.GetValue("local", "archive_path"), '\\') + "\n";
@@ -59,20 +61,19 @@ std::string FtpSender::InfoProgram() {
 	return result;
 }
 
-FtpSender::FtpSender(Ini::Ini& config, Loger& log)
-	: config_(config)
-	, log_(log) {
-	std::cout << InfoProgram();
+FtpSender::FtpSender(Ini::Ini& config)
+	: config_(config) {
+	cout << InfoProgram();
 	curl_global_init(CURL_GLOBAL_ALL);
 	curlup = curl_easy_init();
 	
 	if(curlup == NULL) {
-		std::cout << "!!! ERROR !!! ERROR !!! ERROR !!!\n";
+		cout << "!!! ERROR !!! ERROR !!! ERROR !!!\n";
 	}
 	else {
-		std::string user = config_.GetValue("FTP", "user");
-		std::string password = config_.GetValue("FTP", "password");
-		std::string ftp_url = AddEndCharToString(ChangeCharInString(config_.GetValue("FTP", "server"), '\\', '/'), '/');
+		string user = config_.GetValue("FTP", "user");
+		string password = config_.GetValue("FTP", "password");
+		string ftp_url = AddEndCharToString(ChangeCharInString(config_.GetValue("FTP", "server"), '\\', '/'), '/');
 		int timeout = config_.GetValueInt("FTP", "server_timeout");
 		
 		curl_easy_setopt(curlup, CURLOPT_URL, ftp_url.c_str());
@@ -103,7 +104,7 @@ bool FtpSender::CheckExtension(const fs::path& file) {
 	if (!config_.GetValueBool("local", "check_ext")) {
 		return true;
 	}
-	std::string file_extension = file.extension().empty() ? file.stem().string() : file.extension().string();
+	string file_extension = file.extension().empty() ? file.stem().string() : file.extension().string();
 	const auto& extensions = config_.GetNode("extensions");
 	if (extensions.IsChapter()) {
 		for (const auto& ext : extensions.AsChapter().second) {
@@ -115,19 +116,19 @@ bool FtpSender::CheckExtension(const fs::path& file) {
 	return false;
 }
 
-int FtpSender::SendToFtp() { //const std::string& task) {
+int FtpSender::SendToFtp() { //const string& task) {
 	if(curlup == NULL) {
 		return -1;
 	}
 	
 	fs::path archive_file = AddEndCharToString(ChangeCharInString(config_.GetValue("local", "archive_path"), '/', '\\'), '\\');
-	std::string ftp_url = AddEndCharToString(ChangeCharInString(config_.GetValue("FTP", "server"), '\\', '/'), '/');
-	std::string dest_path = AddEndCharToString(ChangeCharInString(config_.GetValue("local", "dest_path"), '\\', '/'), '/');
+	string ftp_url = AddEndCharToString(ChangeCharInString(config_.GetValue("FTP", "server"), '\\', '/'), '/');
+	string dest_path = AddEndCharToString(ChangeCharInString(config_.GetValue("local", "dest_path"), '\\', '/'), '/');
 	fs::path rep_file = ChangeCharInString(config_.GetValue("local", "rep_file"), '/', '\\');
-	std::string spr_file = AddEndCharToString(ChangeCharInString(config_.GetValue("local", "spr_file"), '\\', '/'), '/');
-	std::string file_mask = config_.GetValue("local", "file_mask");
+	string spr_file = AddEndCharToString(ChangeCharInString(config_.GetValue("local", "spr_file"), '\\', '/'), '/');
+	string file_mask = config_.GetValue("local", "file_mask");
 	int max_files = config_.GetValueInt("local", "max_files");
-	std::string sync_path = DelEndCharOnString(ChangeCharInString(config_.GetValue("local", "sync_path"), '/', '\\'), '\\');
+	string sync_path = DelEndCharOnString(ChangeCharInString(config_.GetValue("local", "sync_path"), '/', '\\'), '\\');
 	
 	FILE *fd;
 
@@ -141,7 +142,7 @@ int FtpSender::SendToFtp() { //const std::string& task) {
 	}*/
 	if (sync_path != "")
 	{
-		FileListMaker filelist(sync_path, log_);
+		FileListMaker filelist(sync_path);
 
 		for (const auto& localpath_file : filelist.GetFileList())
 		{
@@ -151,7 +152,7 @@ int FtpSender::SendToFtp() { //const std::string& task) {
 			if(stat(localpath_file.string().c_str(), &file_info)) {
 				int i = 1;
 				while(i > 0) {
-					fs::path temp_file = localpath_file.parent_path() / ("temp" + std::to_string(i) + localpath_file.extension().string());
+					fs::path temp_file = localpath_file.parent_path() / ("temp" + to_string(i) + localpath_file.extension().string());
 					if (!fs::exists(temp_file)) {
 						fs::rename(localpath_file, temp_file);
 						break;
@@ -166,7 +167,7 @@ int FtpSender::SendToFtp() { //const std::string& task) {
 			if (fd == NULL) {
 				int i = 1;
 				while(i > 0) {
-					fs::path temp_file = localpath_file.parent_path() / ("temp" + std::to_string(i) + localpath_file.extension().string());
+					fs::path temp_file = localpath_file.parent_path() / ("temp" + to_string(i) + localpath_file.extension().string());
 					if (!fs::exists(temp_file)) {
 						fs::rename(localpath_file, temp_file);
 						break;
@@ -177,27 +178,27 @@ int FtpSender::SendToFtp() { //const std::string& task) {
 			}
 			
 			auto file_time = fs::last_write_time(localpath_file);
-			std::time_t tt = to_time_t(file_time);
-		    std::tm *gmt = std::gmtime(&tt);
+			time_t tt = to_time_t(file_time);
+		    tm *gmt = gmtime(&tt);
 		    
-		    std::stringstream subdir;
+		    stringstream subdir;
 		    
 		    subdir << gmt->tm_year + 1900 << "_" 
 				<< (gmt->tm_mon + 1 < 10? "0" : "") << gmt->tm_mon + 1 << "_"
 				<< (gmt->tm_mday < 10? "0" : "") << gmt->tm_mday << "/" ;
-		    std::string destin_file;
+		    string destin_file;
 		    fs::path new_location;
 		    
 		    for (int i = 1; i < max_files; ++i) {
 		    	new_location = subdir.str();
 		    	if (localpath_file.extension().empty()) {
-					new_location = new_location / (file_mask + std::to_string(i) + localpath_file.stem().string());
+					new_location = new_location / (file_mask + to_string(i) + localpath_file.stem().string());
 				}
 				else {
-					new_location = new_location / (file_mask + std::to_string(i) + localpath_file.extension().string());
+					new_location = new_location / (file_mask + to_string(i) + localpath_file.extension().string());
 				}
 		    	destin_file = ftp_url + dest_path + new_location.string();
-		    	std::cout << destin_file;
+		    	cout << destin_file;
 				curl_easy_setopt(curlup, CURLOPT_URL, destin_file.c_str());
 				curl_easy_setopt(curlup, CURLOPT_NOBODY, 1L);
 		    	CURLcode r = curl_easy_perform(curlup);
@@ -217,7 +218,6 @@ int FtpSender::SendToFtp() { //const std::string& task) {
 			fclose(fd);
 			
 			if (r != CURLE_OK) {
-				log_.SaveEventToLog(curl_easy_strerror(r), LOG_STATUS::ER);
 				continue;
 			}
 		    ++file_count;
